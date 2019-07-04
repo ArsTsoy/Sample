@@ -1,21 +1,20 @@
 package com.example.myapplication
 
-import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
-import android.os.Handler
+import android.support.v7.app.AppCompatActivity
 import android.util.Log
 import android.widget.Toast
 import io.reactivex.BackpressureStrategy
-import io.reactivex.Completable
 import io.reactivex.Flowable
 import io.reactivex.Observable
 import io.reactivex.android.schedulers.AndroidSchedulers
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.disposables.Disposable
+import io.reactivex.functions.BiFunction
 import io.reactivex.schedulers.Schedulers
 import kotlinx.android.synthetic.main.activity_main.*
-import java.util.*
 import java.util.concurrent.TimeUnit
+
 
 class MainActivity : AppCompatActivity() {
     private var counter = 1
@@ -59,16 +58,18 @@ class MainActivity : AppCompatActivity() {
 //        )
 
 //        Transformations
-//        disposable = Observable.just("Арслан", "Темирлан", "Нариман", "Даник")
-//            .delay(1, TimeUnit.SECONDS)
-//            .map { it + " Великий" }
-//            .subscribeOn(Schedulers.io())
-//            .observeOn(AndroidSchedulers.mainThread())
-//            .subscribe({
-//                Log.e("myTag", "it: $it")
-//            }, {
-//
-//            })
+        disposable = Observable.just("Арслан", "Темирлан", "Нариман", "Даник")
+
+            .map { it + " Великий" }
+            .delay(3, TimeUnit.SECONDS)
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribeOn(Schedulers.io())
+
+            .subscribe({
+                Log.e("myTag", "it: $it")
+            }, {
+
+            })
 
 //        disposable = Observable.just("Арслан", "Темирлан", "Нариман", "Даник")
 //            .switchMap {
@@ -93,6 +94,80 @@ class MainActivity : AppCompatActivity() {
 //
 //            })
 
+//        disposable = Observable.just("Арслан", "Темирлан", "Нариман", "Даник")
+//            .debounce (0, TimeUnit.SECONDS)
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe({
+//                Log.i("myTag", it.toString())
+//            }, {
+//
+//            })
+
+//        disposable = Observable.just("Арслан", "Темирлан", "Нариман", "Даник", "Темирлан", "Темирлан")
+//            .distinct()
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe(
+//                {
+//                    Log.i("myTag", it.toString())
+//                },
+//                {
+//
+//                }
+//            )
+
+//        disposable = Observable.just("Арслан", "Темирлан", "Темирлан", "Нариман", "Даник", "Темирлан", "Темирлан")
+//            .elementAt(0)
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe{
+//                    Log.i("myTag", it.toString())
+//                }
+
+//        disposable = Observable.just("Арслан", "Темирлан", "Темирлан", "Нариман", "Даник", "Темирлан", "Темирлан")
+//            .ignoreElements()
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe{
+//
+//            }
+
+//        disposable = Observable.just("Арслан", "Темирлан", "Темирлан", "Нариман", "Даник", "Темирлан", "Темирлан")
+//            .skip(3)
+//            .subscribeOn(Schedulers.io())
+//            .observeOn(AndroidSchedulers.mainThread())
+//            .subscribe{
+//                Log.i("myTag", it.toString())
+//            }
+
+
+//        //Sample ZIP operator
+//        val names = Observable.just("Алексей",  "Петя", "Иван", "Дмитрий")
+//        val surname = Observable.just("Иванов", "Сидоров", "Петров", "Алексеев")
+
+
+//        disposeBag.add(names.zipWith(surname, object: BiFunction<String, String, String> {
+//            override fun apply(t: String, u: String): String {
+//                return "$t $u"
+//            }
+//        })
+//            .subscribe{
+//                Log.i("myTag", "result $it")
+//            }
+//        )
+
+        fetchUsers()
+            .delay(1000, TimeUnit.MILLISECONDS)
+            .skip(4)
+            .defaultIfEmpty("Users not found!")
+            .subscribeOn(Schedulers.io())
+            .observeOn(AndroidSchedulers.mainThread())
+            .subscribe{
+                Log.i("myTag", it)
+            }
+
+
         btnClick.setOnClickListener {
             btnClick.text = counter.toString()
             counter++
@@ -101,8 +176,13 @@ class MainActivity : AppCompatActivity() {
 
     override fun onDestroy() {
 //        disposeBag.clear()
-        Log.e("myTag", "dispose on Destroy: ${disposable.isDisposed}")
+        Log.e("d", "dispose on Destroy: ${disposable.isDisposed}")
         super.onDestroy()
+    }
+
+    fun fetchUsers(): Observable<String>{
+        return Observable.just("User 1", "User 2", "User 3", "User 4")
+
     }
 
 
@@ -125,12 +205,10 @@ class MainActivity : AppCompatActivity() {
     fun datasourceFlowable(): Flowable<Int> {
         return Flowable.create({ subscriber ->
             for (i in 1..5000000) {
-
                 subscriber.onNext(i)
-
             }
             subscriber.onComplete()
-        }, BackpressureStrategy.LATEST)
+        }, BackpressureStrategy.BUFFER)
     }
 
 //    //Completable sample
@@ -142,3 +220,4 @@ class MainActivity : AppCompatActivity() {
 
 
 }
+
